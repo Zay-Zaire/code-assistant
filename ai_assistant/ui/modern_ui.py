@@ -1,0 +1,929 @@
+"""
+Modern UI Components - 专业级现代化界面组件
+提供商业级应用的视觉体验（参考QQ/微信客户端风格）
+"""
+
+from __future__ import annotations
+from typing import Optional, Callable, List, Dict, Any
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtProperty
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 设计系统常量
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class DesignSystem:
+    """设计系统 - 统一的视觉语言"""
+
+    # 颜色系统 - 更加柔和、专业
+    class Colors:
+        # 背景色 - 深色主题，类似QQ/微信深色模式
+        BG_PRIMARY = "#1a1a1a"       # 主背景
+        BG_SECONDARY = "#242424"     # 侧边栏背景
+        BG_TERTIARY = "#2d2d2d"      # 卡片/输入框背景
+        BG_CARD = "#2a2a2a"          # 卡片背景
+        BG_ELEVATED = "#333333"      # 悬浮/hover背景
+        BG_HOVER = "#3a3a3a"         # hover状态
+
+        # 边框色
+        BORDER_DEFAULT = "rgba(255, 255, 255, 0.08)"
+        BORDER_HOVER = "rgba(255, 255, 255, 0.15)"
+        BORDER_FOCUS = "rgba(7, 193, 96, 0.6)"
+
+        # 品牌色 - 微信绿色风格
+        PRIMARY = "#07c160"          # 主色调 - 微信绿
+        PRIMARY_HOVER = "#06ad56"
+        PRIMARY_LIGHT = "rgba(7, 193, 96, 0.12)"
+        PRIMARY_DARK = "#059048"
+
+        ACCENT = "#1890ff"           # 强调色 - 蓝色
+        ACCENT_LIGHT = "rgba(24, 144, 255, 0.12)"
+
+        SUCCESS = "#07c160"          # 成功
+        SUCCESS_LIGHT = "rgba(7, 193, 96, 0.12)"
+
+        WARNING = "#faad14"          # 警告
+        WARNING_LIGHT = "rgba(250, 173, 20, 0.12)"
+
+        DANGER = "#ff4d4f"           # 危险
+        DANGER_LIGHT = "rgba(255, 77, 79, 0.12)"
+
+        # 文字色
+        TEXT_PRIMARY = "#e8e8e8"
+        TEXT_SECONDARY = "rgba(232, 232, 232, 0.65)"
+        TEXT_TERTIARY = "rgba(232, 232, 232, 0.45)"
+        TEXT_DISABLED = "rgba(232, 232, 232, 0.25)"
+
+    # 间距系统
+    class Spacing:
+        XS = 4
+        SM = 8
+        MD = 12
+        LG = 16
+        XL = 24
+        XXL = 32
+        XXXL = 48
+
+    # 圆角系统
+    class Radius:
+        XS = 4
+        SM = 6
+        MD = 8
+        LG = 12
+        XL = 16
+        FULL = 9999
+
+    # 字体系统
+    class Typography:
+        FONT_FAMILY = "Microsoft YaHei UI, Segoe UI, SF Pro Display, -apple-system, sans-serif"
+
+        # 字号
+        SIZE_XS = 11
+        SIZE_SM = 12
+        SIZE_MD = 13
+        SIZE_LG = 14
+        SIZE_XL = 16
+        SIZE_XXL = 18
+        SIZE_XXXL = 24
+
+        # 字重
+        WEIGHT_NORMAL = 400
+        WEIGHT_MEDIUM = 500
+        WEIGHT_SEMIBOLD = 600
+        WEIGHT_BOLD = 700
+
+    # 动画时长
+    class Animation:
+        FAST = 150
+        NORMAL = 200
+        SLOW = 300
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 侧边栏导航
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class SidebarItem(QtWidgets.QPushButton):
+    """侧边栏导航项 - 带动画效果"""
+
+    def __init__(self, icon: str, text: str, parent=None):
+        super().__init__(parent)
+        self._icon = icon
+        self._text = text
+        self.setText(f"  {icon}   {text}")
+        self.setCheckable(True)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setFixedHeight(48)
+
+        # 动画
+        self._bg_opacity = 0.0
+        self._animation = QPropertyAnimation(self, b"bgOpacity")
+        self._animation.setDuration(DesignSystem.Animation.FAST)
+        self._animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        self._update_style()
+
+    def get_bg_opacity(self):
+        return self._bg_opacity
+
+    def set_bg_opacity(self, value):
+        self._bg_opacity = value
+        self._update_style()
+
+    bgOpacity = pyqtProperty(float, get_bg_opacity, set_bg_opacity)
+
+    def enterEvent(self, event):
+        if not self.isChecked():
+            self._animation.stop()
+            self._animation.setStartValue(self._bg_opacity)
+            self._animation.setEndValue(1.0)
+            self._animation.start()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        if not self.isChecked():
+            self._animation.stop()
+            self._animation.setStartValue(self._bg_opacity)
+            self._animation.setEndValue(0.0)
+            self._animation.start()
+        super().leaveEvent(event)
+
+    def _update_style(self):
+        if self.isChecked():
+            bg = DesignSystem.Colors.PRIMARY_LIGHT
+            text_color = DesignSystem.Colors.PRIMARY
+            font_weight = DesignSystem.Typography.WEIGHT_SEMIBOLD
+            border_left = f"3px solid {DesignSystem.Colors.PRIMARY}"
+        else:
+            # 根据动画值计算背景透明度
+            alpha = int(self._bg_opacity * 255 * 0.08)
+            bg = f"rgba(255, 255, 255, {alpha/255:.3f})"
+            text_color = DesignSystem.Colors.TEXT_SECONDARY if self._bg_opacity < 0.5 else DesignSystem.Colors.TEXT_PRIMARY
+            font_weight = DesignSystem.Typography.WEIGHT_MEDIUM
+            border_left = "3px solid transparent"
+
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background: {bg};
+                border: none;
+                border-left: {border_left};
+                border-radius: 0;
+                color: {text_color};
+                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                font-weight: {font_weight};
+                text-align: left;
+                padding-left: 20px;
+            }}
+        """)
+
+    def setChecked(self, checked):
+        super().setChecked(checked)
+        self._bg_opacity = 1.0 if checked else 0.0
+        self._update_style()
+
+
+class Sidebar(QtWidgets.QFrame):
+    """现代化侧边栏 - 类似QQ/微信风格"""
+
+    page_changed = QtCore.pyqtSignal(int)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedWidth(200)
+        self.setObjectName("sidebar")
+        self._items: List[SidebarItem] = []
+        self._button_group = QtWidgets.QButtonGroup(self)
+        self._button_group.setExclusive(True)
+
+        self._setup_ui()
+        self._apply_style()
+
+    def _setup_ui(self):
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # Logo 区域
+        self.logo_container = QtWidgets.QWidget()
+        self.logo_container.setFixedHeight(64)
+        logo_layout = QtWidgets.QHBoxLayout(self.logo_container)
+        logo_layout.setContentsMargins(20, 0, 20, 0)
+        logo_layout.setSpacing(12)
+
+        # Logo 图标
+        logo_icon = QtWidgets.QLabel("🤖")
+        logo_icon.setStyleSheet(f"font-size: 24px;")
+        logo_layout.addWidget(logo_icon)
+
+        # 标题
+        title_container = QtWidgets.QWidget()
+        title_layout = QtWidgets.QVBoxLayout(title_container)
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        title_layout.setSpacing(2)
+
+        self.logo_label = QtWidgets.QLabel("AI Assistant")
+        self.logo_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_LG}px;
+            font-weight: {DesignSystem.Typography.WEIGHT_BOLD};
+            color: {DesignSystem.Colors.TEXT_PRIMARY};
+        """)
+
+        self.version_label = QtWidgets.QLabel("v2.0.0")
+        self.version_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_XS}px;
+            color: {DesignSystem.Colors.TEXT_TERTIARY};
+        """)
+
+        title_layout.addWidget(self.logo_label)
+        title_layout.addWidget(self.version_label)
+        logo_layout.addWidget(title_container)
+        logo_layout.addStretch()
+
+        layout.addWidget(self.logo_container)
+
+        # 分隔线
+        separator = QtWidgets.QFrame()
+        separator.setFixedHeight(1)
+        separator.setStyleSheet(f"background: {DesignSystem.Colors.BORDER_DEFAULT};")
+        layout.addWidget(separator)
+
+        # 导航项容器
+        self.nav_container = QtWidgets.QWidget()
+        self.nav_layout = QtWidgets.QVBoxLayout(self.nav_container)
+        self.nav_layout.setContentsMargins(0, 8, 0, 8)
+        self.nav_layout.setSpacing(2)
+        layout.addWidget(self.nav_container)
+
+        layout.addStretch()
+
+        # 底部状态区域
+        self.status_container = QtWidgets.QWidget()
+        self.status_container.setFixedHeight(56)
+        status_layout = QtWidgets.QHBoxLayout(self.status_container)
+        status_layout.setContentsMargins(20, 0, 20, 16)
+        status_layout.setSpacing(10)
+
+        # 状态指示器
+        self.status_dot = QtWidgets.QFrame()
+        self.status_dot.setFixedSize(8, 8)
+        self.status_dot.setStyleSheet(f"""
+            background: {DesignSystem.Colors.DANGER};
+            border-radius: 4px;
+        """)
+
+        self.status_text = QtWidgets.QLabel("未启动")
+        self.status_text.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_SM}px;
+            color: {DesignSystem.Colors.TEXT_TERTIARY};
+        """)
+
+        status_layout.addWidget(self.status_dot)
+        status_layout.addWidget(self.status_text)
+        status_layout.addStretch()
+
+        layout.addWidget(self.status_container)
+
+    def _apply_style(self):
+        self.setStyleSheet(f"""
+            #sidebar {{
+                background: {DesignSystem.Colors.BG_SECONDARY};
+                border-right: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+            }}
+        """)
+
+    def add_item(self, icon: str, text: str) -> SidebarItem:
+        item = SidebarItem(icon, text, self)
+        self._button_group.addButton(item, len(self._items))
+        self._items.append(item)
+        self.nav_layout.addWidget(item)
+
+        item.clicked.connect(lambda: self._on_item_clicked(self._items.index(item)))
+
+        if len(self._items) == 1:
+            item.setChecked(True)
+
+        return item
+
+    def _on_item_clicked(self, index: int):
+        for i, item in enumerate(self._items):
+            item.setChecked(i == index)
+        self.page_changed.emit(index)
+
+    def set_current_index(self, index: int):
+        if 0 <= index < len(self._items):
+            self._on_item_clicked(index)
+
+    def update_status(self, text: str, running: bool = False):
+        self.status_text.setText(text)
+        color = DesignSystem.Colors.SUCCESS if running else DesignSystem.Colors.TEXT_TERTIARY
+        dot_color = DesignSystem.Colors.SUCCESS if running else DesignSystem.Colors.DANGER
+        self.status_text.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_SM}px;
+            color: {color};
+        """)
+        self.status_dot.setStyleSheet(f"""
+            background: {dot_color};
+            border-radius: 4px;
+        """)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 页面容器
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class PageContainer(QtWidgets.QWidget):
+    """页面容器 - 带标题和滚动"""
+
+    def __init__(self, title: str = "", subtitle: str = "", parent=None):
+        super().__init__(parent)
+        self._setup_ui(title, subtitle)
+
+    def _setup_ui(self, title: str, subtitle: str):
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(32, 24, 32, 24)
+        layout.setSpacing(0)
+
+        # 页面标题区域
+        if title:
+            header = QtWidgets.QWidget()
+            header_layout = QtWidgets.QVBoxLayout(header)
+            header_layout.setContentsMargins(0, 0, 0, 20)
+            header_layout.setSpacing(4)
+
+            title_label = QtWidgets.QLabel(title)
+            title_label.setStyleSheet(f"""
+                font-size: {DesignSystem.Typography.SIZE_XXL}px;
+                font-weight: {DesignSystem.Typography.WEIGHT_BOLD};
+                color: {DesignSystem.Colors.TEXT_PRIMARY};
+            """)
+            header_layout.addWidget(title_label)
+
+            if subtitle:
+                subtitle_label = QtWidgets.QLabel(subtitle)
+                subtitle_label.setStyleSheet(f"""
+                    font-size: {DesignSystem.Typography.SIZE_SM}px;
+                    color: {DesignSystem.Colors.TEXT_TERTIARY};
+                """)
+                header_layout.addWidget(subtitle_label)
+
+            layout.addWidget(header)
+
+        # 滚动区域
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setStyleSheet("""
+            QScrollArea { background: transparent; border: none; }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 8px;
+                margin: 0;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 4px;
+                min-height: 40px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(255, 255, 255, 0.25);
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: transparent;
+            }
+        """)
+
+        self.content_widget = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(0, 0, 12, 0)
+        self.content_layout.setSpacing(16)
+
+        scroll.setWidget(self.content_widget)
+        layout.addWidget(scroll, 1)
+
+    def add_widget(self, widget: QtWidgets.QWidget):
+        self.content_layout.addWidget(widget)
+
+    def add_stretch(self):
+        self.content_layout.addStretch()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 卡片组件
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Card(QtWidgets.QFrame):
+    """现代化卡片组件 - 带hover效果"""
+
+    def __init__(self, title: str = "", description: str = "", parent=None):
+        super().__init__(parent)
+        self.setObjectName("card")
+        self._hover = False
+        self._setup_ui(title, description)
+        self._apply_style()
+
+    def _setup_ui(self, title: str, description: str):
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(16)
+
+        # 标题区域
+        if title:
+            header = QtWidgets.QWidget()
+            header_layout = QtWidgets.QVBoxLayout(header)
+            header_layout.setContentsMargins(0, 0, 0, 0)
+            header_layout.setSpacing(4)
+
+            title_label = QtWidgets.QLabel(title)
+            title_label.setStyleSheet(f"""
+                font-size: {DesignSystem.Typography.SIZE_LG}px;
+                font-weight: {DesignSystem.Typography.WEIGHT_SEMIBOLD};
+                color: {DesignSystem.Colors.TEXT_PRIMARY};
+            """)
+            header_layout.addWidget(title_label)
+
+            if description:
+                desc_label = QtWidgets.QLabel(description)
+                desc_label.setWordWrap(True)
+                desc_label.setStyleSheet(f"""
+                    font-size: {DesignSystem.Typography.SIZE_SM}px;
+                    color: {DesignSystem.Colors.TEXT_TERTIARY};
+                """)
+                header_layout.addWidget(desc_label)
+
+            layout.addWidget(header)
+
+        # 内容区域
+        self.content_widget = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setSpacing(12)
+        layout.addWidget(self.content_widget)
+
+    def _apply_style(self):
+        border_color = DesignSystem.Colors.BORDER_HOVER if self._hover else DesignSystem.Colors.BORDER_DEFAULT
+        bg = DesignSystem.Colors.BG_ELEVATED if self._hover else DesignSystem.Colors.BG_CARD
+        self.setStyleSheet(f"""
+            #card {{
+                background: {bg};
+                border: 1px solid {border_color};
+                border-radius: {DesignSystem.Radius.LG}px;
+            }}
+        """)
+
+    def enterEvent(self, event):
+        self._hover = True
+        self._apply_style()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._hover = False
+        self._apply_style()
+        super().leaveEvent(event)
+
+    def add_widget(self, widget: QtWidgets.QWidget):
+        self.content_layout.addWidget(widget)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 表单组件
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class FormRow(QtWidgets.QWidget):
+    """表单行 - 标签 + 输入框"""
+
+    def __init__(self, label: str, widget: QtWidgets.QWidget, helper: str = "", parent=None):
+        super().__init__(parent)
+        self._setup_ui(label, widget, helper)
+
+    def _setup_ui(self, label: str, widget: QtWidgets.QWidget, helper: str):
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(16)
+
+        # 标签
+        label_widget = QtWidgets.QLabel(label)
+        label_widget.setFixedWidth(90)
+        label_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        label_widget.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            color: {DesignSystem.Colors.TEXT_SECONDARY};
+        """)
+        layout.addWidget(label_widget)
+
+        # 输入区域
+        field_container = QtWidgets.QWidget()
+        field_layout = QtWidgets.QVBoxLayout(field_container)
+        field_layout.setContentsMargins(0, 0, 0, 0)
+        field_layout.setSpacing(4)
+        field_layout.addWidget(widget)
+
+        if helper:
+            helper_label = QtWidgets.QLabel(helper)
+            helper_label.setWordWrap(True)
+            helper_label.setStyleSheet(f"""
+                font-size: {DesignSystem.Typography.SIZE_XS}px;
+                color: {DesignSystem.Colors.TEXT_TERTIARY};
+            """)
+            field_layout.addWidget(helper_label)
+
+        layout.addWidget(field_container, 1)
+
+
+class ModernLineEdit(QtWidgets.QLineEdit):
+    """现代化输入框 - 带焦点动画"""
+
+    def __init__(self, placeholder: str = "", parent=None):
+        super().__init__(parent)
+        self.setPlaceholderText(placeholder)
+        self.setMinimumHeight(36)
+        self._focused = False
+        self._apply_style()
+
+    def focusInEvent(self, event):
+        self._focused = True
+        self._apply_style()
+        super().focusInEvent(event)
+
+    def focusOutEvent(self, event):
+        self._focused = False
+        self._apply_style()
+        super().focusOutEvent(event)
+
+    def _apply_style(self):
+        border_color = DesignSystem.Colors.PRIMARY if self._focused else DesignSystem.Colors.BORDER_DEFAULT
+        bg = DesignSystem.Colors.BG_ELEVATED if self._focused else DesignSystem.Colors.BG_TERTIARY
+
+        self.setStyleSheet(f"""
+            QLineEdit {{
+                background: {bg};
+                border: 1px solid {border_color};
+                border-radius: {DesignSystem.Radius.SM}px;
+                padding: 0 12px;
+                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                color: {DesignSystem.Colors.TEXT_PRIMARY};
+                selection-background-color: {DesignSystem.Colors.PRIMARY};
+            }}
+            QLineEdit::placeholder {{
+                color: {DesignSystem.Colors.TEXT_DISABLED};
+            }}
+        """)
+
+
+class ModernComboBox(QtWidgets.QComboBox):
+    """现代化下拉框"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumHeight(36)
+        self._apply_style()
+
+    def _apply_style(self):
+        self.setStyleSheet(f"""
+            QComboBox {{
+                background: {DesignSystem.Colors.BG_TERTIARY};
+                border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+                border-radius: {DesignSystem.Radius.SM}px;
+                padding: 0 12px;
+                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                color: {DesignSystem.Colors.TEXT_PRIMARY};
+            }}
+            QComboBox:hover {{
+                border-color: {DesignSystem.Colors.BORDER_HOVER};
+                background: {DesignSystem.Colors.BG_ELEVATED};
+            }}
+            QComboBox:focus {{
+                border-color: {DesignSystem.Colors.PRIMARY};
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                width: 28px;
+            }}
+            QComboBox::down-arrow {{
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 5px solid {DesignSystem.Colors.TEXT_SECONDARY};
+                margin-right: 8px;
+            }}
+            QComboBox QAbstractItemView {{
+                background: {DesignSystem.Colors.BG_ELEVATED};
+                border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+                border-radius: {DesignSystem.Radius.SM}px;
+                padding: 4px;
+                selection-background-color: {DesignSystem.Colors.PRIMARY_LIGHT};
+                selection-color: {DesignSystem.Colors.TEXT_PRIMARY};
+                outline: none;
+            }}
+            QComboBox QAbstractItemView::item {{
+                height: 32px;
+                padding-left: 12px;
+                border-radius: {DesignSystem.Radius.XS}px;
+            }}
+            QComboBox QAbstractItemView::item:hover {{
+                background: {DesignSystem.Colors.BG_HOVER};
+            }}
+        """)
+
+
+class ModernCheckBox(QtWidgets.QCheckBox):
+    """现代化复选框"""
+
+    def __init__(self, text: str = "", parent=None):
+        super().__init__(text, parent)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._apply_style()
+
+    def _apply_style(self):
+        self.setStyleSheet(f"""
+            QCheckBox {{
+                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                color: {DesignSystem.Colors.TEXT_PRIMARY};
+                spacing: 8px;
+            }}
+            QCheckBox::indicator {{
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                border: 1px solid {DesignSystem.Colors.BORDER_HOVER};
+                background: transparent;
+            }}
+            QCheckBox::indicator:hover {{
+                border-color: {DesignSystem.Colors.PRIMARY};
+                background: {DesignSystem.Colors.PRIMARY_LIGHT};
+            }}
+            QCheckBox::indicator:checked {{
+                background: {DesignSystem.Colors.PRIMARY};
+                border-color: {DesignSystem.Colors.PRIMARY};
+            }}
+            QCheckBox::indicator:checked:hover {{
+                background: {DesignSystem.Colors.PRIMARY_HOVER};
+                border-color: {DesignSystem.Colors.PRIMARY_HOVER};
+            }}
+        """)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 按钮组件
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class ModernButton(QtWidgets.QPushButton):
+    """现代化按钮 - 带按压效果"""
+
+    def __init__(self, text: str, variant: str = "primary", parent=None):
+        super().__init__(text, parent)
+        self.variant = variant
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setMinimumHeight(36)
+        self._pressed = False
+        self._apply_style()
+
+    def mousePressEvent(self, event):
+        self._pressed = True
+        self._apply_style()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._pressed = False
+        self._apply_style()
+        super().mouseReleaseEvent(event)
+
+    def _apply_style(self):
+        variants = {
+            "primary": {
+                "bg": DesignSystem.Colors.PRIMARY,
+                "bg_hover": DesignSystem.Colors.PRIMARY_HOVER,
+                "bg_pressed": DesignSystem.Colors.PRIMARY_DARK,
+                "text": "#ffffff",
+            },
+            "success": {
+                "bg": DesignSystem.Colors.SUCCESS,
+                "bg_hover": "#06ad56",
+                "bg_pressed": "#059048",
+                "text": "#ffffff",
+            },
+            "danger": {
+                "bg": DesignSystem.Colors.DANGER,
+                "bg_hover": "#ff7875",
+                "bg_pressed": "#d9363e",
+                "text": "#ffffff",
+            },
+            "secondary": {
+                "bg": DesignSystem.Colors.BG_TERTIARY,
+                "bg_hover": DesignSystem.Colors.BG_HOVER,
+                "bg_pressed": DesignSystem.Colors.BG_ELEVATED,
+                "text": DesignSystem.Colors.TEXT_PRIMARY,
+            },
+            "ghost": {
+                "bg": "transparent",
+                "bg_hover": DesignSystem.Colors.BG_TERTIARY,
+                "bg_pressed": DesignSystem.Colors.BG_ELEVATED,
+                "text": DesignSystem.Colors.TEXT_SECONDARY,
+            },
+        }
+
+        v = variants.get(self.variant, variants["primary"])
+        bg = v["bg_pressed"] if self._pressed else v["bg"]
+
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background: {bg};
+                border: none;
+                border-radius: {DesignSystem.Radius.SM}px;
+                padding: 0 20px;
+                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                font-weight: {DesignSystem.Typography.WEIGHT_MEDIUM};
+                color: {v["text"]};
+            }}
+            QPushButton:hover {{
+                background: {v["bg_hover"]};
+            }}
+            QPushButton:disabled {{
+                background: {DesignSystem.Colors.BG_TERTIARY};
+                color: {DesignSystem.Colors.TEXT_DISABLED};
+            }}
+        """)
+
+
+class IconButton(QtWidgets.QPushButton):
+    """图标按钮"""
+
+    def __init__(self, icon: str, tooltip: str = "", parent=None):
+        super().__init__(icon, parent)
+        self.setToolTip(tooltip)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setFixedSize(36, 36)
+        self._apply_style()
+
+    def _apply_style(self):
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background: {DesignSystem.Colors.BG_TERTIARY};
+                border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+                border-radius: {DesignSystem.Radius.SM}px;
+                font-size: 16px;
+            }}
+            QPushButton:hover {{
+                background: {DesignSystem.Colors.BG_HOVER};
+                border-color: {DesignSystem.Colors.BORDER_HOVER};
+            }}
+            QPushButton:pressed {{
+                background: {DesignSystem.Colors.BG_ELEVATED};
+            }}
+        """)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 控制栏组件
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class ControlBar(QtWidgets.QFrame):
+    """底部控制栏 - 简洁风格"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(64)
+        self._setup_ui()
+        self._apply_style()
+
+    def _setup_ui(self):
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(24, 0, 24, 0)
+        layout.setSpacing(16)
+
+        # 左侧状态
+        self.status_container = QtWidgets.QWidget()
+        status_layout = QtWidgets.QHBoxLayout(self.status_container)
+        status_layout.setContentsMargins(0, 0, 0, 0)
+        status_layout.setSpacing(10)
+
+        self.status_indicator = QtWidgets.QFrame()
+        self.status_indicator.setFixedSize(8, 8)
+        self.status_indicator.setStyleSheet(f"""
+            background: {DesignSystem.Colors.DANGER};
+            border-radius: 4px;
+        """)
+
+        self.status_label = QtWidgets.QLabel("未启动")
+        self.status_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            color: {DesignSystem.Colors.TEXT_SECONDARY};
+        """)
+
+        status_layout.addWidget(self.status_indicator)
+        status_layout.addWidget(self.status_label)
+        layout.addWidget(self.status_container)
+
+        layout.addStretch()
+
+        # 右侧按钮
+        self.button_container = QtWidgets.QWidget()
+        self.button_layout = QtWidgets.QHBoxLayout(self.button_container)
+        self.button_layout.setContentsMargins(0, 0, 0, 0)
+        self.button_layout.setSpacing(12)
+        layout.addWidget(self.button_container)
+
+    def _apply_style(self):
+        self.setStyleSheet(f"""
+            ControlBar {{
+                background: {DesignSystem.Colors.BG_SECONDARY};
+                border-top: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+            }}
+        """)
+
+    def update_status(self, text: str, running: bool = False):
+        self.status_label.setText(text)
+        color = DesignSystem.Colors.SUCCESS if running else DesignSystem.Colors.TEXT_SECONDARY
+        dot_color = DesignSystem.Colors.SUCCESS if running else DesignSystem.Colors.DANGER
+        self.status_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            color: {color};
+        """)
+        self.status_indicator.setStyleSheet(f"""
+            background: {dot_color};
+            border-radius: 4px;
+        """)
+
+    def add_button(self, button: QtWidgets.QPushButton):
+        self.button_layout.addWidget(button)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 主窗口布局
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class MainWindowLayout(QtWidgets.QWidget):
+    """主窗口布局 - 侧边栏 + 内容区 + 控制栏"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # 主体区域 (侧边栏 + 内容)
+        body = QtWidgets.QWidget()
+        body_layout = QtWidgets.QHBoxLayout(body)
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSpacing(0)
+
+        # 侧边栏
+        self.sidebar = Sidebar()
+        body_layout.addWidget(self.sidebar)
+
+        # 内容区域
+        self.content_area = QtWidgets.QWidget()
+        self.content_area.setStyleSheet(f"background: {DesignSystem.Colors.BG_PRIMARY};")
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_area)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setSpacing(0)
+
+        # 页面堆栈
+        self.page_stack = QtWidgets.QStackedWidget()
+        self.content_layout.addWidget(self.page_stack)
+
+        body_layout.addWidget(self.content_area, 1)
+        layout.addWidget(body, 1)
+
+        # 底部控制栏
+        self.control_bar = ControlBar()
+        layout.addWidget(self.control_bar)
+
+        # 连接信号
+        self.sidebar.page_changed.connect(self.page_stack.setCurrentIndex)
+
+    def add_page(self, icon: str, title: str, page: QtWidgets.QWidget) -> int:
+        self.sidebar.add_item(icon, title)
+        self.page_stack.addWidget(page)
+        return self.page_stack.count() - 1
+
+    def update_status(self, text: str, running: bool = False):
+        self.sidebar.update_status(text, running)
+        self.control_bar.update_status(text, running)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 导出
+# ═══════════════════════════════════════════════════════════════════════════════
+
+__all__ = [
+    "DesignSystem",
+    "Sidebar",
+    "SidebarItem",
+    "PageContainer",
+    "Card",
+    "FormRow",
+    "ModernLineEdit",
+    "ModernComboBox",
+    "ModernCheckBox",
+    "ModernButton",
+    "IconButton",
+    "ControlBar",
+    "MainWindowLayout",
+]

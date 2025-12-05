@@ -49,6 +49,20 @@ except Exception:  # pragma: no cover - Fluent UI is optional
     FluentIcon = None
     HAS_FLUENT_THEME = False
 
+# 导入现代化UI组件
+from ai_assistant.ui.modern_ui import (
+    DesignSystem,
+    MainWindowLayout,
+    PageContainer,
+    Card,
+    FormRow,
+    ModernLineEdit,
+    ModernComboBox,
+    ModernCheckBox,
+    ModernButton,
+    IconButton,
+)
+
 # ──────────────────────── UI组件 ──────────────────────── #
 from ai_assistant.ui.overlay import Overlay
 from ai_assistant.ui.prompt_manager import PromptManagerWidget
@@ -82,6 +96,7 @@ class AIAssistantApp(QtWidgets.QMainWindow):
 
         self.use_fluent_theme = False
         self.fluent_theme_manager = None
+        self.main_layout = None  # 现代化UI主布局
         self.top_bar = None
         self.status_bar = None
         self.status_label = None
@@ -137,50 +152,328 @@ class AIAssistantApp(QtWidgets.QMainWindow):
         return True
 
     def _setup_ui_fluent(self, central_widget: QtWidgets.QWidget) -> None:
-        self.setStyleSheet("")
+        """使用现代化UI框架构建界面"""
+        self.setStyleSheet(f"background: {DesignSystem.Colors.BG_PRIMARY};")
+
+        # 主布局框架
+        self.main_layout = MainWindowLayout()
         layout = QtWidgets.QVBoxLayout(central_widget)
-        layout.setContentsMargins(28, 28, 28, 24)
-        layout.setSpacing(18)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.main_layout)
 
-        subtitle = "桌面助手配置中心"
-        self.top_bar = FluentTopBar(
-            title="AI 截图助手",
-            subtitle=subtitle,
-            version=f"v{APP_VERSION}",
-        )
-        layout.addWidget(self.top_bar)
+        # 更新侧边栏版本号
+        self.main_layout.sidebar.version_label.setText(f"v{APP_VERSION}")
 
-        if self.top_bar:
-            reload_icon = getattr(FluentIcon, "SYNC", None) if FluentIcon else None
-            folder_icon = getattr(FluentIcon, "FOLDER", None) if FluentIcon else None
-            self.top_bar.add_quick_action("重新加载配置", self.load_settings, icon=reload_icon)
-            self.top_bar.add_quick_action("打开日志目录", self.open_logs_directory, icon=folder_icon)
+        # ═══════════════════════════════════════════════════════════════════
+        # 页面1: 基本设置
+        # ═══════════════════════════════════════════════════════════════════
+        settings_page = PageContainer("基本设置", "配置 AI 服务商、网络代理和界面选项")
+        self._build_settings_page(settings_page)
+        self.main_layout.add_page("⚙️", "基本设置", settings_page)
 
-        self.tab_widget = self._create_tab_widget()
-        layout.addWidget(self.tab_widget, 1)
+        # ═══════════════════════════════════════════════════════════════════
+        # 页面2: 提示词管理
+        # ═══════════════════════════════════════════════════════════════════
+        prompts_page = PageContainer("提示词管理", "管理 AI 对话的系统提示词和快捷键")
+        prompts_widget = PromptManagerWidget(self.config_manager, self.log_manager)
+        prompts_page.add_widget(prompts_widget)
+        self.main_layout.add_page("💬", "提示词", prompts_page)
 
-        self.status_bar = FluentStatusBar("未启动", color=STATUS_COLORS["stopped"])
-        layout.addWidget(self.status_bar)
+        # ═══════════════════════════════════════════════════════════════════
+        # 页面3: 运行日志
+        # ═══════════════════════════════════════════════════════════════════
+        show_log_tab = self.config_manager.get("show_log_tab", True)
+        if show_log_tab:
+            logs_page = PageContainer("运行日志", "查看应用程序运行状态和调试信息")
+            self.log_viewer = LogViewerWidget(self.log_manager, True)
+            logs_page.add_widget(self.log_viewer)
+            self.main_layout.add_page("📋", "日志", logs_page)
+        else:
+            self.log_viewer = None
 
-        self.status_label = None
-
-        self.start_btn = QtWidgets.QPushButton("🚀 启动监听")
+        # ═══════════════════════════════════════════════════════════════════
+        # 底部控制栏按钮
+        # ═══════════════════════════════════════════════════════════════════
+        self.start_btn = ModernButton("🚀 启动监听", "success")
+        self.start_btn.setMinimumWidth(140)
         self.start_btn.clicked.connect(self.start_listening)
-        self._apply_button_style(self.start_btn, "primary", compact=True)
 
-        self.stop_btn = QtWidgets.QPushButton("⏹️ 停止监听")
+        self.stop_btn = ModernButton("⏹️ 停止监听", "danger")
+        self.stop_btn.setMinimumWidth(140)
         self.stop_btn.clicked.connect(self.stop_listening)
         self.stop_btn.setEnabled(False)
-        self._apply_button_style(self.stop_btn, "danger", compact=True)
 
-        if self.status_bar:
-            button_row = QtWidgets.QWidget()
-            row_layout = QtWidgets.QHBoxLayout(button_row)
-            row_layout.setContentsMargins(0, 0, 0, 0)
-            row_layout.setSpacing(14)
-            row_layout.addWidget(self.start_btn)
-            row_layout.addWidget(self.stop_btn)
-            self.status_bar.add_widget(button_row)
+        self.main_layout.control_bar.add_button(self.start_btn)
+        self.main_layout.control_bar.add_button(self.stop_btn)
+
+        # 兼容性设置
+        self.status_bar = None
+        self.status_label = None
+        self.top_bar = None
+        self.tab_widget = None
+
+    def _build_settings_page(self, page: PageContainer):
+        """构建设置页面内容"""
+
+        # ─────────────────────────────────────────────────────────────
+        # AI 服务商卡片
+        # ─────────────────────────────────────────────────────────────
+        provider_card = Card("AI 服务商", "选择默认服务商并配置认证信息")
+
+        # 服务商选择
+        provider_select = QtWidgets.QWidget()
+        provider_layout = QtWidgets.QHBoxLayout(provider_select)
+        provider_layout.setContentsMargins(0, 0, 0, 0)
+        provider_layout.setSpacing(12)
+
+        current_provider = self.config_manager.get("provider", DEFAULT_PROVIDER)
+        self.provider_radio_group = QtWidgets.QButtonGroup()
+        self.provider_radios = {}
+
+        for provider in AVAILABLE_PROVIDERS:
+            radio = QtWidgets.QRadioButton(provider)
+            radio.setMinimumHeight(32)
+            radio.setStyleSheet(f"""
+                QRadioButton {{
+                    font-size: {DesignSystem.Typography.SIZE_MD}px;
+                    color: {DesignSystem.Colors.TEXT_PRIMARY};
+                    spacing: 8px;
+                }}
+                QRadioButton::indicator {{
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 9px;
+                    border: 2px solid {DesignSystem.Colors.BORDER_HOVER};
+                }}
+                QRadioButton::indicator:checked {{
+                    background: {DesignSystem.Colors.PRIMARY};
+                    border-color: {DesignSystem.Colors.PRIMARY};
+                }}
+            """)
+            self.provider_radios[provider] = radio
+            self.provider_radio_group.addButton(radio)
+            provider_layout.addWidget(radio)
+
+            if provider == current_provider:
+                radio.setChecked(True)
+
+            radio.toggled.connect(self.on_provider_radio_changed)
+
+        provider_layout.addStretch()
+        provider_card.add_widget(FormRow("服务商", provider_select))
+
+        # 服务商配置堆栈
+        self.provider_stack = QtWidgets.QStackedWidget()
+        provider_card.add_widget(self.provider_stack)
+
+        # Gemini 配置面板
+        self.gemini_group = self._build_modern_provider_panel("Gemini")
+        self.provider_stack.addWidget(self.gemini_group)
+
+        # GPT 配置面板
+        self.gpt_group = self._build_modern_provider_panel("GPT")
+        self.provider_stack.addWidget(self.gpt_group)
+
+        self.provider_widget_map = {
+            "Gemini": self.gemini_group,
+            "GPT": self.gpt_group,
+        }
+
+        if current_provider in self.provider_widget_map:
+            self.provider_stack.setCurrentWidget(self.provider_widget_map[current_provider])
+
+        page.add_widget(provider_card)
+
+        # ─────────────────────────────────────────────────────────────
+        # 网络配置卡片
+        # ─────────────────────────────────────────────────────────────
+        network_card = Card("网络配置", "为 API 请求配置代理服务")
+
+        self.proxy_edit = ModernLineEdit("例如: http://127.0.0.1:7890")
+        proxy_url = self.config_manager.get("proxy", "")
+        self.proxy_edit.setText(proxy_url)
+        network_card.add_widget(FormRow("代理地址", self.proxy_edit, "留空则不使用代理"))
+
+        page.add_widget(network_card)
+
+        # ─────────────────────────────────────────────────────────────
+        # 界面配置卡片
+        # ─────────────────────────────────────────────────────────────
+        ui_card = Card("界面配置", "调整浮窗透明度和显示选项")
+
+        # 透明度滑块
+        opacity_widget = QtWidgets.QWidget()
+        opacity_layout = QtWidgets.QHBoxLayout(opacity_widget)
+        opacity_layout.setContentsMargins(0, 0, 0, 0)
+        opacity_layout.setSpacing(16)
+
+        self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.opacity_slider.setRange(50, 255)
+        self.opacity_slider.setValue(self.config_manager.get("background_opacity", 120))
+        self.opacity_slider.setStyleSheet(f"""
+            QSlider::groove:horizontal {{
+                background: {DesignSystem.Colors.BG_TERTIARY};
+                height: 6px;
+                border-radius: 3px;
+            }}
+            QSlider::handle:horizontal {{
+                background: {DesignSystem.Colors.PRIMARY};
+                width: 18px;
+                height: 18px;
+                margin: -6px 0;
+                border-radius: 9px;
+            }}
+            QSlider::handle:horizontal:hover {{
+                background: {DesignSystem.Colors.PRIMARY_HOVER};
+            }}
+            QSlider::sub-page:horizontal {{
+                background: {DesignSystem.Colors.PRIMARY};
+                border-radius: 3px;
+            }}
+        """)
+        self.opacity_slider.valueChanged.connect(self.update_opacity_label)
+        opacity_layout.addWidget(self.opacity_slider, 1)
+
+        self.opacity_value_label = QtWidgets.QLabel(str(self.opacity_slider.value()))
+        self.opacity_value_label.setFixedWidth(50)
+        self.opacity_value_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.opacity_value_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            font-weight: {DesignSystem.Typography.WEIGHT_SEMIBOLD};
+            color: {DesignSystem.Colors.PRIMARY_HOVER};
+            background: {DesignSystem.Colors.PRIMARY_LIGHT};
+            border-radius: {DesignSystem.Radius.MD}px;
+            padding: 6px;
+        """)
+        opacity_layout.addWidget(self.opacity_value_label)
+
+        ui_card.add_widget(FormRow("浮窗透明度", opacity_widget, "数值越低越透明 (50-255)"))
+
+        # 显示日志选项
+        self.show_log_checkbox = ModernCheckBox("显示运行日志页面")
+        self.show_log_checkbox.setChecked(self.config_manager.get("show_log_tab", True))
+        ui_card.add_widget(FormRow("日志面板", self.show_log_checkbox))
+
+        page.add_widget(ui_card)
+
+        # ─────────────────────────────────────────────────────────────
+        # 当前提示词状态卡片
+        # ─────────────────────────────────────────────────────────────
+        prompt_card = Card("当前提示词", "查看当前选用的提示词信息")
+
+        self.current_prompt_label = QtWidgets.QLabel()
+        self.current_prompt_label.setWordWrap(True)
+        self.current_prompt_label.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            color: {DesignSystem.Colors.TEXT_PRIMARY};
+            background: {DesignSystem.Colors.BG_TERTIARY};
+            padding: 16px;
+            border-radius: {DesignSystem.Radius.MD}px;
+            border-left: 3px solid {DesignSystem.Colors.PRIMARY};
+        """)
+        self.update_current_prompt_display()
+        prompt_card.add_widget(self.current_prompt_label)
+
+        page.add_widget(prompt_card)
+        page.add_stretch()
+
+    def _build_modern_provider_panel(self, provider: str) -> QtWidgets.QWidget:
+        """构建现代化的服务商配置面板"""
+        panel = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(panel)
+        layout.setContentsMargins(0, 16, 0, 0)
+        layout.setSpacing(12)
+
+        # 面板标题
+        title_text = "🟢 Gemini 配置" if provider == "Gemini" else "🔵 GPT 配置"
+        title = QtWidgets.QLabel(title_text)
+        title.setStyleSheet(f"""
+            font-size: {DesignSystem.Typography.SIZE_MD}px;
+            font-weight: {DesignSystem.Typography.WEIGHT_SEMIBOLD};
+            color: {DesignSystem.Colors.TEXT_SECONDARY};
+            padding-bottom: 8px;
+        """)
+        layout.addWidget(title)
+
+        if provider == "Gemini":
+            # Gemini API Key
+            api_key_row = QtWidgets.QWidget()
+            api_key_layout = QtWidgets.QHBoxLayout(api_key_row)
+            api_key_layout.setContentsMargins(0, 0, 0, 0)
+            api_key_layout.setSpacing(8)
+
+            self.gemini_api_key_edit = ModernLineEdit("请输入您的 Gemini API Key")
+            self.gemini_api_key_edit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+            api_key = self.config_manager.get("gemini.api_key", "")
+            self.gemini_api_key_edit.setText(api_key)
+            api_key_layout.addWidget(self.gemini_api_key_edit, 1)
+
+            self.show_gemini_api_btn = IconButton("👁️", "显示/隐藏 API Key")
+            self.show_gemini_api_btn.clicked.connect(self.toggle_gemini_api_visibility)
+            api_key_layout.addWidget(self.show_gemini_api_btn)
+
+            layout.addWidget(FormRow("API Key", api_key_row))
+
+            # Gemini Base URL
+            self.gemini_base_url_edit = ModernLineEdit("API 基础 URL")
+            base_url = self.config_manager.get("gemini.base_url", DEFAULT_GEMINI_BASE_URL)
+            self.gemini_base_url_edit.setText(base_url)
+            layout.addWidget(FormRow("Base URL", self.gemini_base_url_edit))
+
+            # Gemini 模型选择
+            self.gemini_model_combo = ModernComboBox()
+            models = self.config_manager.get("gemini.available_models", AVAILABLE_GEMINI_MODELS)
+            self.gemini_model_combo.addItems(models)
+            current_model = self.config_manager.get("gemini.model", DEFAULT_GEMINI_MODEL)
+            if current_model in models:
+                self.gemini_model_combo.setCurrentText(current_model)
+            layout.addWidget(FormRow("模型", self.gemini_model_combo))
+
+            # Gemini 代理选项
+            self.gemini_use_proxy_check = ModernCheckBox("为 Gemini 使用代理")
+            self.gemini_use_proxy_check.setChecked(self.config_manager.get("gemini.use_proxy", False))
+            layout.addWidget(FormRow("网络", self.gemini_use_proxy_check))
+
+        else:  # GPT
+            # GPT API Key
+            api_key_row = QtWidgets.QWidget()
+            api_key_layout = QtWidgets.QHBoxLayout(api_key_row)
+            api_key_layout.setContentsMargins(0, 0, 0, 0)
+            api_key_layout.setSpacing(8)
+
+            self.gpt_api_key_edit = ModernLineEdit("请输入您的 OpenAI API Key")
+            self.gpt_api_key_edit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+            api_key = self.config_manager.get("gpt.api_key", "")
+            self.gpt_api_key_edit.setText(api_key)
+            api_key_layout.addWidget(self.gpt_api_key_edit, 1)
+
+            self.show_gpt_api_btn = IconButton("👁️", "显示/隐藏 API Key")
+            self.show_gpt_api_btn.clicked.connect(self.toggle_gpt_api_visibility)
+            api_key_layout.addWidget(self.show_gpt_api_btn)
+
+            layout.addWidget(FormRow("API Key", api_key_row))
+
+            # GPT Base URL
+            self.gpt_base_url_edit = ModernLineEdit("API 基础 URL")
+            base_url = self.config_manager.get("gpt.base_url", DEFAULT_GPT_BASE_URL)
+            self.gpt_base_url_edit.setText(base_url)
+            layout.addWidget(FormRow("Base URL", self.gpt_base_url_edit))
+
+            # GPT 模型选择
+            self.gpt_model_combo = ModernComboBox()
+            models = self.config_manager.get("gpt.available_models", AVAILABLE_GPT_MODELS)
+            self.gpt_model_combo.addItems(models)
+            current_model = self.config_manager.get("gpt.model", DEFAULT_GPT_MODEL)
+            if current_model in models:
+                self.gpt_model_combo.setCurrentText(current_model)
+            layout.addWidget(FormRow("模型", self.gpt_model_combo))
+
+            # GPT 代理选项
+            self.gpt_use_proxy_check = ModernCheckBox("为 GPT 使用代理")
+            self.gpt_use_proxy_check.setChecked(self.config_manager.get("gpt.use_proxy", False))
+            layout.addWidget(FormRow("网络", self.gpt_use_proxy_check))
+
+        return panel
 
     def _setup_ui_classic(self, central_widget: QtWidgets.QWidget) -> None:
         layout = QtWidgets.QVBoxLayout(central_widget)
@@ -1152,6 +1445,13 @@ class AIAssistantApp(QtWidgets.QMainWindow):
 
     def update_status(self, status, color=STATUS_COLORS["stopped"]):
         """更新状态显示"""
+        # 新版现代化UI
+        if self.use_fluent_theme and hasattr(self, 'main_layout') and self.main_layout:
+            running = "运行中" in status
+            self.main_layout.update_status(status, running)
+            return
+
+        # 旧版Fluent UI
         if self.use_fluent_theme and self.status_bar:
             self.status_bar.update_status(status, color=color)
 
