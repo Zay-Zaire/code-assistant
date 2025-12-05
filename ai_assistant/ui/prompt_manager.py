@@ -37,7 +37,7 @@ class ModernTextEdit(QtWidgets.QPlainTextEdit):
 
     def _apply_style(self):
         border_color = DesignSystem.Colors.PRIMARY if self._focused else DesignSystem.Colors.BORDER_DEFAULT
-        bg = DesignSystem.Colors.BG_ELEVATED if self._focused else DesignSystem.Colors.BG_TERTIARY
+        bg = DesignSystem.Colors.BG_ELEVATED if self._focused else DesignSystem.Colors.BG_INPUT
 
         self.setStyleSheet(f"""
             QPlainTextEdit {{

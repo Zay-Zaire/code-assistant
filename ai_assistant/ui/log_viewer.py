@@ -25,7 +25,7 @@ class ModernLogTextEdit(QtWidgets.QTextEdit):
             QTextEdit {{
                 font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
                 font-size: 12px;
-                background: {DesignSystem.Colors.BG_TERTIARY};
+                background: {DesignSystem.Colors.BG_INPUT};
                 color: {DesignSystem.Colors.TEXT_PRIMARY};
                 border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
                 border-radius: {DesignSystem.Radius.SM}px;

@@ -18,12 +18,13 @@ class DesignSystem:
     # 颜色系统 - 更加柔和、专业
     class Colors:
         # 背景色 - 深色主题，类似QQ/微信深色模式
-        BG_PRIMARY = "#1a1a1a"       # 主背景
-        BG_SECONDARY = "#242424"     # 侧边栏背景
-        BG_TERTIARY = "#2d2d2d"      # 卡片/输入框背景
-        BG_CARD = "#2a2a2a"          # 卡片背景
-        BG_ELEVATED = "#333333"      # 悬浮/hover背景
-        BG_HOVER = "#3a3a3a"         # hover状态
+        BG_PRIMARY = "#1e1e1e"       # 主背景（内容区域）
+        BG_SECONDARY = "#252525"     # 侧边栏背景
+        BG_TERTIARY = "#2f2f2f"      # 输入框背景
+        BG_CARD = "#282828"          # 卡片背景
+        BG_ELEVATED = "#353535"      # 悬浮/hover背景
+        BG_HOVER = "#3d3d3d"         # hover状态
+        BG_INPUT = "#323232"         # 输入框统一背景
 
         # 边框色
         BORDER_DEFAULT = "rgba(255, 255, 255, 0.08)"
@@ -480,13 +481,14 @@ class FormRow(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
 
-        # 标签
+        # 标签 - 宽度增加到100以适应中文
         label_widget = QtWidgets.QLabel(label)
-        label_widget.setFixedWidth(90)
-        label_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+        label_widget.setFixedWidth(100)
+        label_widget.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignTop)
         label_widget.setStyleSheet(f"""
             font-size: {DesignSystem.Typography.SIZE_MD}px;
             color: {DesignSystem.Colors.TEXT_SECONDARY};
+            padding-top: 8px;
         """)
         layout.addWidget(label_widget)
 
@@ -531,7 +533,7 @@ class ModernLineEdit(QtWidgets.QLineEdit):
 
     def _apply_style(self):
         border_color = DesignSystem.Colors.PRIMARY if self._focused else DesignSystem.Colors.BORDER_DEFAULT
-        bg = DesignSystem.Colors.BG_ELEVATED if self._focused else DesignSystem.Colors.BG_TERTIARY
+        bg = DesignSystem.Colors.BG_ELEVATED if self._focused else DesignSystem.Colors.BG_INPUT
 
         self.setStyleSheet(f"""
             QLineEdit {{
@@ -560,10 +562,11 @@ class ModernComboBox(QtWidgets.QComboBox):
     def _apply_style(self):
         self.setStyleSheet(f"""
             QComboBox {{
-                background: {DesignSystem.Colors.BG_TERTIARY};
+                background: {DesignSystem.Colors.BG_INPUT};
                 border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
                 border-radius: {DesignSystem.Radius.SM}px;
                 padding: 0 12px;
+                padding-right: 30px;
                 font-size: {DesignSystem.Typography.SIZE_MD}px;
                 color: {DesignSystem.Colors.TEXT_PRIMARY};
             }}
@@ -575,19 +578,23 @@ class ModernComboBox(QtWidgets.QComboBox):
                 border-color: {DesignSystem.Colors.PRIMARY};
             }}
             QComboBox::drop-down {{
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                width: 24px;
                 border: none;
-                width: 28px;
+                background: transparent;
             }}
             QComboBox::down-arrow {{
                 image: none;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 5px solid {DesignSystem.Colors.TEXT_SECONDARY};
-                margin-right: 8px;
+                width: 0;
+                height: 0;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 6px solid {DesignSystem.Colors.TEXT_SECONDARY};
             }}
             QComboBox QAbstractItemView {{
                 background: {DesignSystem.Colors.BG_ELEVATED};
-                border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
+                border: 1px solid {DesignSystem.Colors.BORDER_HOVER};
                 border-radius: {DesignSystem.Radius.SM}px;
                 padding: 4px;
                 selection-background-color: {DesignSystem.Colors.PRIMARY_LIGHT};
