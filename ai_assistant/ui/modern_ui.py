@@ -655,19 +655,25 @@ class ModernRadioButton(QtWidgets.QRadioButton):
     def __init__(self, text: str = "", parent=None):
         super().__init__(text, parent)
         self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
-        self.setMinimumHeight(32)
+        self.setMinimumHeight(28)
+        self.setMinimumWidth(70)
         self._apply_style()
 
     def _apply_style(self):
         self.setStyleSheet(f"""
             QRadioButton {{
-                font-size: {DesignSystem.Typography.SIZE_MD}px;
+                font-size: {DesignSystem.Typography.SIZE_SM}px;
                 color: {DesignSystem.Colors.TEXT_SECONDARY};
-                spacing: 0;
-                padding: 6px 16px;
+                padding: 4px 14px;
+                padding-left: 14px;
                 background: transparent;
                 border: 1px solid {DesignSystem.Colors.BORDER_DEFAULT};
-                border-radius: 16px;
+                border-radius: 14px;
+            }}
+            QRadioButton::indicator {{
+                width: 0px;
+                height: 0px;
+                margin: 0px;
             }}
             QRadioButton:hover {{
                 background: {DesignSystem.Colors.BG_TERTIARY};
@@ -683,10 +689,6 @@ class ModernRadioButton(QtWidgets.QRadioButton):
             QRadioButton:checked:hover {{
                 background: {DesignSystem.Colors.PRIMARY_HOVER};
                 border-color: {DesignSystem.Colors.PRIMARY_HOVER};
-            }}
-            QRadioButton::indicator {{
-                width: 0;
-                height: 0;
             }}
         """)
 
