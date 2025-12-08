@@ -35,8 +35,8 @@
 ### 主界面
 ![主界面设置](assets/main-settings-1.png)
 
-### 服务商配置
-![服务商设置](assets/main-settings-2.png)
+### 提示词配置
+![提示词设置](assets/main-settings-2.png)
 
 ### AI 回复浮窗
 ![浮窗效果](assets/overlay.png)

@@ -21,7 +21,7 @@
       "gpt-4o-mini"
     ]
   },
-  "proxy": "http://127.0.0.1:7890",
+  "proxy": "http://127.0.0.1:6789",
   "ui": {
     "window_width": 1100,
     "window_height": 800,

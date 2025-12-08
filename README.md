@@ -35,8 +35,8 @@ This tool helps you **instantly ask AI about anything on your screen**:
 ### Main Interface
 ![Main Settings](assets/main-settings-1.png)
 
-### Provider Settings
-![Provider Settings](assets/main-settings-2.png)
+### Prompt Settings
+![Prompt Settings](assets/main-settings-2.png)
 
 ### AI Response Overlay
 ![Overlay Window](assets/overlay.png)
