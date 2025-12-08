@@ -1,142 +1,142 @@
-# AI Screenshot Assistant
+# AI 截图助手
 
-A desktop application that captures screenshots and analyzes them using AI (Google Gemini / OpenAI GPT). Features a stealth overlay display with **anti-screenshot protection** - perfect for quick AI-assisted problem-solving during online assessments.
+一款桌面应用程序，通过截图并使用 AI（Google Gemini / OpenAI GPT）进行分析。具有隐蔽式浮窗显示和 **防截屏保护** 功能——非常适合在线笔试/面试时快速获取 AI 辅助。
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![PyQt6](https://img.shields.io/badge/PyQt6-6.4+-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
 
-[中文文档](README_CN.md) | English
+[English](README_EN.md) | 中文
 
-## 🎯 What is this?
+## 🎯 这是什么？
 
-This tool helps you **instantly ask AI about anything on your screen**:
+这个工具可以帮你 **随手截图，立即问 AI**：
 
-- 📚 **Daily Learning**: Quickly screenshot any problem or code and get AI explanations
-- 💼 **Online Interviews/Assessments**: Get discreet AI assistance during coding tests
-- 🛡️ **Anti-Detection**: The overlay window is **invisible to screenshot tools** and screen recording software
+- 📚 **日常学习**：遇到问题或代码直接截图，快速获取 AI 解释
+- 💼 **在线笔试/面试**：在编程测试时获取隐蔽的 AI 辅助
+- 🛡️ **防检测**：浮窗 **对截图工具完全不可见**，不会被录屏或监考软件发现
 
-> **Key Feature**: When anti-screenshot protection is enabled, the AI response overlay cannot be captured by any screen recording or screenshot tool (Snipping Tool, ShareX, OBS, video conferencing screen share, etc.)
+> **核心特性**：开启防截屏保护后，AI 回复浮窗无法被任何截屏录屏工具捕获（截图工具、ShareX、OBS、视频会议屏幕共享、在线监考软件等全部无效）
 
-## ✨ Features
+## ✨ 功能特性
 
-- **Multi-AI Support**: Switch between Google Gemini and OpenAI GPT
-- **Smart Screenshot**: Select screen regions with crosshair selector
-- **Stealth Overlay**: Semi-transparent floating window that blends with any background
-- **🔒 Anti-Screenshot Protection**: Overlay is invisible to screen capture tools (Windows)
-- **Global Hotkeys**: System-wide keyboard shortcuts for quick access
-- **Multiple Prompts**: Configure multiple AI prompts with dedicated hotkeys
-- **Auto Code Extraction**: Automatically extracts and copies code blocks to clipboard
-- **Streaming Response**: Real-time display of AI responses
+- **多 AI 支持**：在 Google Gemini 和 OpenAI GPT 之间自由切换
+- **智能截图**：十字准星区域选择器
+- **隐蔽浮窗**：半透明悬浮窗口，可与任何背景融合
+- **🔒 防截屏保护**：浮窗对截屏工具不可见（仅限 Windows）
+- **全局热键**：系统级快捷键，随时快速调用
+- **多提示词**：配置多个 AI 提示词，每个可绑定独立热键
+- **自动代码提取**：自动提取代码块并复制到剪贴板
+- **流式响应**：实时显示 AI 响应内容
 
-## 📸 Screenshots
+## 📸 截图预览
 
-### Main Interface
-![Main Settings](assets/main-settings-1.png)
+### 主界面
+![主界面设置](assets/main-settings-1.png)
 
-### Prompt Settings
-![Prompt Settings](assets/main-settings-2.png)
+### 提示词配置
+![提示词设置](assets/main-settings-2.png)
 
-### AI Response Overlay
-![Overlay Window](assets/overlay.png)
+### AI 回复浮窗
+![浮窗效果](assets/overlay.png)
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### Prerequisites
+### 环境要求
 
-- Python 3.10 or higher
-- Windows 10/11 (for anti-screenshot feature)
+- Python 3.10 或更高版本
+- Windows 10/11（防截屏功能需要）
 
-### Installation
+### 安装步骤
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/yourusername/ai-screenshot-assistant.git
 cd ai-screenshot-assistant
 
-# Create virtual environment (recommended)
+# 创建虚拟环境（推荐）
 python -m venv venv
 venv\Scripts\activate  # Windows
 
-# Install dependencies
+# 安装依赖
 pip install -r requirements.txt
 
-# Create configuration file
+# 创建配置文件
 copy model_config.example.json model_config.json
 ```
 
-### Configure API Keys
+### 配置 API 密钥
 
-Edit `model_config.json` and add your API keys:
-- **Gemini**: Get from [Google AI Studio](https://makersuite.google.com/app/apikey)
-- **GPT**: Get from [OpenAI Platform](https://platform.openai.com/api-keys)
+编辑 `model_config.json` 并添加你的 API 密钥：
+- **Gemini**：从 [Google AI Studio](https://makersuite.google.com/app/apikey) 获取
+- **GPT**：从 [OpenAI Platform](https://platform.openai.com/api-keys) 获取
 
-### Run
+### 运行
 
 ```bash
 python main.py
 ```
 
-## ⌨️ Hotkeys
+## ⌨️ 快捷键
 
-| Hotkey | Action |
-|--------|--------|
-| `Alt+Z` | Capture screenshot and send to AI |
-| `Alt+Q` | Toggle overlay visibility |
-| `Alt+W` | Capture screenshot only (add to history) |
-| `Alt+V` | Clear screenshot history |
-| `Alt+1-9` | Switch between prompts |
-| `Alt+S` | Switch AI provider |
-| `Alt+Up/Down` | Scroll overlay content |
+| 快捷键 | 功能 |
+|--------|------|
+| `Alt+Z` | 截图并发送到 AI 分析 |
+| `Alt+Q` | 显示/隐藏浮窗 |
+| `Alt+W` | 仅截图（添加到历史） |
+| `Alt+V` | 清空截图历史 |
+| `Alt+1-9` | 切换提示词 |
+| `Alt+S` | 切换 AI 服务商 |
+| `Alt+↑/↓` | 滚动浮窗内容 |
 
-## 🛡️ Anti-Screenshot Protection
+## 🛡️ 防截屏保护
 
-The overlay window uses Windows `SetWindowDisplayAffinity` API with `WDA_EXCLUDEFROMCAPTURE` flag, making it **invisible** to:
+浮窗使用 Windows `SetWindowDisplayAffinity` API 和 `WDA_EXCLUDEFROMCAPTURE` 标志，使其对以下工具 **完全不可见**：
 
-- ✅ Windows Snipping Tool
-- ✅ ShareX, Greenshot, and other screenshot tools
-- ✅ OBS Studio and screen recording software
-- ✅ Zoom, Teams, and video conferencing screen share
-- ✅ Online proctoring software
+- ✅ Windows 截图工具
+- ✅ ShareX、Greenshot 等截图软件
+- ✅ OBS Studio 等录屏软件
+- ✅ Zoom、腾讯会议等视频会议屏幕共享
+- ✅ 在线监考/防作弊软件
 
-> **Note**: This feature only works on Windows 10/11 and can be toggled on/off in settings.
+> **注意**：此功能仅在 Windows 10/11 上有效，可在设置中开启或关闭。
 
-### Stealth Design
+### 隐蔽设计
 
-The overlay is designed to be inconspicuous:
-- High transparency (adjustable 50-255)
-- Muted text colors that blend with any background
-- No visible borders or shadows
-- Minimal, almost invisible title bar
+浮窗设计追求低调隐蔽：
+- 高透明度（可调节 50-255）
+- 柔和的文字颜色，可与任何背景融合
+- 无可见边框和阴影
+- 极简、几乎不可见的标题栏
 
-## 📁 Project Structure
+## 📁 项目结构
 
 ```
 ai-screenshot-assistant/
-├── main.py                    # Application entry point
-├── model_config.example.json  # Configuration template
-├── requirements.txt           # Python dependencies
+├── main.py                    # 应用入口
+├── model_config.example.json  # 配置模板
+├── requirements.txt           # Python 依赖
 ├── ai_assistant/
-│   ├── core/                  # Core functionality
-│   ├── services/              # AI API clients
-│   ├── ui/                    # UI components
-│   └── utils/                 # Utilities
+│   ├── core/                  # 核心功能
+│   ├── services/              # AI API 客户端
+│   ├── ui/                    # UI 组件
+│   └── utils/                 # 工具类
 ```
 
-## 🤝 Contributing
+## 🤝 参与贡献
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+欢迎贡献代码！请随时提交 Pull Request。
 
-## 📄 License
+## 📄 开源许可
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-This tool is intended for personal productivity and learning purposes. Users are responsible for ensuring compliance with:
-- Your organization's policies
-- Exam/assessment rules and regulations
-- Applicable laws in your jurisdiction
+本工具仅供个人效率提升和学习使用。用户有责任确保遵守：
+- 所在组织/公司的相关政策
+- 考试/测试的规则和规定
+- 所在地区的适用法律法规
 
-The developers are not responsible for any misuse of this software.
+开发者对本软件的任何滥用行为不承担责任。
